@@ -1,0 +1,50 @@
+class Validators {
+  // Validate required field
+  static String? validateRequired(String? value, String fieldName) {
+    if (value == null || value.trim().isEmpty) {
+      return '$fieldName is required';
+    }
+    return null;
+  }
+
+  // Validate phone number (10 digits)
+  static String? validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Phone number is required';
+    }
+    
+    final cleaned = value.replaceAll(RegExp(r'[^\d]'), '');
+    if (cleaned.length != 10) {
+      return 'Phone number must be 10 digits';
+    }
+    
+    return null;
+  }
+
+  // Validate date format (DD/MM/YYYY)
+  static String? validateDate(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Date is required';
+    }
+    
+    final dateRegex = RegExp(r'^\d{2}/\d{2}/\d{4}$');
+    if (!dateRegex.hasMatch(value)) {
+      return 'Date must be in DD/MM/YYYY format';
+    }
+    
+    return null;
+  }
+
+  // Validate number
+  static String? validateNumber(String? value, String fieldName) {
+    if (value == null || value.trim().isEmpty) {
+      return '$fieldName is required';
+    }
+    
+    if (int.tryParse(value) == null) {
+      return '$fieldName must be a valid number';
+    }
+    
+    return null;
+  }
+}
