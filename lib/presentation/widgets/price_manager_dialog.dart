@@ -190,19 +190,21 @@ class _PriceManagerDialogState extends State<PriceManagerDialog> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: _updateSingleRoom,
-                    child: const Text('Update Selected'),
+                    icon: const Icon(Icons.check),
+                    label: const Text('Update Selected'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: _updateByCapacity,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondaryAccent,
                     ),
-                    child: const Text('Update All (Same Sharing)'),
+                    icon: const Icon(Icons.done_all),
+                    label: const Text('Update All (Same Sharing)'),
                   ),
                 ),
               ],

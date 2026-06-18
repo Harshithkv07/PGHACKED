@@ -5,16 +5,37 @@ import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 
 class FileStorageService {
-  // Get the base directory for screenshots
+  // Get the base directory for screenshots (public directory preferred)
   Future<Directory> _getScreenshotsDirectory() async {
-    final appDir = await getApplicationDocumentsDirectory();
-    final screenshotsDir = Directory(path.join(appDir.path, 'pg_management', 'screenshots'));
+    Directory? baseDir;
     
-    if (!await screenshotsDir.exists()) {
-      await screenshotsDir.create(recursive: true);
+    try {
+      if (Platform.isAndroid) {
+        final downloadDir = Directory('/storage/emulated/0/Download');
+        if (await downloadDir.exists()) {
+          baseDir = Directory(path.join(downloadDir.path, 'PGHacked', 'Screenshots'));
+        } else {
+          final extDir = await getExternalStorageDirectory();
+          if (extDir != null) {
+            baseDir = Directory(path.join(extDir.path, 'PGHacked', 'Screenshots'));
+          }
+        }
+      }
+    } catch (e) {
+      print('Error accessing external storage path: $e');
     }
     
-    return screenshotsDir;
+    // Fallback for iOS, Windows, or if above checks failed/threw
+    if (baseDir == null) {
+      final appDir = await getApplicationDocumentsDirectory();
+      baseDir = Directory(path.join(appDir.path, 'PGHacked', 'Screenshots'));
+    }
+    
+    if (!await baseDir.exists()) {
+      await baseDir.create(recursive: true);
+    }
+    
+    return baseDir;
   }
 
   // Save payment screenshot with organized folder structure

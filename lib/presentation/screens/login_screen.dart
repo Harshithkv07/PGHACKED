@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           
                           // Title
                           Text(
-                            'PG Management',
+                            'PGHacked',
                             style: Theme.of(context).textTheme.displayMedium,
                           ),
                           const SizedBox(height: 8),

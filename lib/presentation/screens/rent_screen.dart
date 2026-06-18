@@ -33,20 +33,50 @@ class _RentScreenState extends State<RentScreen> {
     final paymentMode = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppColors.cardBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Payment Mode'),
-        content: const Text('How did the student pay?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('How did the student pay?', style: TextStyle(color: AppColors.textSecondary)),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.successColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () => Navigator.pop(context, 'Cash'),
+                    icon: const Icon(Icons.money),
+                    label: const Text('Cash'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryAccent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () => Navigator.pop(context, 'UPI'),
+                    icon: const Icon(Icons.qr_code),
+                    label: const Text('UPI'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, 'Cash'),
-            child: const Text('Cash'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, 'UPI'),
-            child: const Text('UPI'),
           ),
         ],
       ),
@@ -94,6 +124,43 @@ class _RentScreenState extends State<RentScreen> {
             content: Text(screenshotPath != null 
                 ? 'Payment marked as paid with screenshot' 
                 : 'Payment marked as paid'),
+            backgroundColor: AppColors.successColor,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _revertToPending(int studentId, String studentName) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.cardBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Revert Payment Status'),
+        content: Text('Are you sure you want to revert $studentName\'s payment status to Pending? This will delete the payment record for the current month.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.errorColor,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Revert'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await Provider.of<RentProvider>(context, listen: false).revertToPending(studentId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Payment status reverted to pending'),
             backgroundColor: AppColors.successColor,
           ),
         );
@@ -420,9 +487,16 @@ class _RentScreenState extends State<RentScreen> {
                                         tooltip: 'Send Reminder',
                                       ),
                                     ] else ...[
-                                      const Icon(
-                                        Icons.done_all,
-                                        color: AppColors.successColor,
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.check_circle,
+                                          color: AppColors.successColor,
+                                        ),
+                                        onPressed: () => _revertToPending(
+                                          student.id!,
+                                          student.name,
+                                        ),
+                                        tooltip: 'Revert to Pending',
                                       ),
                                       const SizedBox(width: 8),
                                       IconButton(

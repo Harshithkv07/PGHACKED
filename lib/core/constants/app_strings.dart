@@ -1,6 +1,6 @@
 class AppStrings {
   // App Info
-  static const String appName = 'PG Management';
+  static const String appName = 'PGHacked';
   
   // Tab Names
   static const String addStudentTab = 'Add Student';

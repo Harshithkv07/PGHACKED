@@ -1,10 +1,18 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../core/constants/app_colors.dart';
+import '../../logic/providers/auth_provider.dart';
+import '../../logic/providers/rent_provider.dart';
+import '../../logic/providers/room_provider.dart';
 import 'accounts_screen.dart';
 import 'add_student_screen.dart';
 import 'dashboard_screen.dart';
 import 'students_list_screen.dart';
 import 'rent_screen.dart';
+import 'login_screen.dart';
 import '../widgets/monthly_summary_sheet.dart';
 import '../widgets/monthly_overview_sheet.dart';
 
@@ -33,6 +41,36 @@ class _MainScreenState extends State<MainScreen> {
     'Students List',
     'Rent Management',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initCalendarAndMonth();
+    });
+  }
+
+  Future<void> _initCalendarAndMonth() async {
+    try {
+      if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+        await [
+          Permission.calendar,
+          Permission.storage,
+        ].request();
+      }
+    } catch (e) {
+      print('Error requesting permissions: $e');
+    }
+
+    if (mounted) {
+      final rentProvider = Provider.of<RentProvider>(context, listen: false);
+      await rentProvider.checkAndHandleMonthTransition();
+      await rentProvider.loadStudents();
+      if (mounted) {
+        await Provider.of<RoomProvider>(context, listen: false).loadRooms();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,10 +113,11 @@ class _MainScreenState extends State<MainScreen> {
           ],
           IconButton(
             icon: const Icon(Icons.info_outline),
+            tooltip: 'About',
             onPressed: () {
               showAboutDialog(
                 context: context,
-                applicationName: 'PG Management',
+                applicationName: 'PGHacked',
                 applicationVersion: '1.0.0',
                 applicationIcon: Container(
                   width: 60,
@@ -99,6 +138,44 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 ),
               );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: AppColors.cardBackground,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  title: const Text('Logout'),
+                  content: const Text('Are you sure you want to logout?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.errorColor,
+                      ),
+                      onPressed: () => Navigator.pop(context, true),
+                      icon: const Icon(Icons.logout),
+                      label: const Text('Logout'),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirmed == true && mounted) {
+                await Provider.of<AuthProvider>(context, listen: false).logout();
+                if (mounted) {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  );
+                }
+              }
             },
           ),
         ],

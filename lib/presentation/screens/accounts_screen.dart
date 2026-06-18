@@ -108,7 +108,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
               },
               child: const Text('Use Yesterday\'s'),
             ),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: () {
               final val = double.tryParse(controller.text);
               if (val != null && val >= 0) {
@@ -116,7 +116,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 Navigator.pop(ctx);
               }
             },
-            child: const Text('Set'),
+            icon: const Icon(Icons.check),
+            label: const Text('Set'),
           ),
         ],
       ),
@@ -203,7 +204,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
               onPressed: () => Navigator.pop(ctx),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: () {
                 final amt = double.tryParse(amountCtrl.text);
                 if (amt != null && amt > 0) {
@@ -220,7 +221,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   Navigator.pop(ctx);
                 }
               },
-              child: Text(existing == null ? 'Add' : 'Save'),
+              icon: Icon(existing == null ? Icons.add : Icons.save),
+              label: Text(existing == null ? 'Add' : 'Save'),
             ),
           ],
         ),

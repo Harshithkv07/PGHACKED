@@ -58,9 +58,34 @@ class ExcelService {
     }
 
     // Save file
-    final directory = await getApplicationDocumentsDirectory();
+    Directory? baseDir;
+    try {
+      if (Platform.isAndroid) {
+        final downloadDir = Directory('/storage/emulated/0/Download');
+        if (await downloadDir.exists()) {
+          baseDir = Directory('${downloadDir.path}/PGHacked');
+        } else {
+          final extDir = await getExternalStorageDirectory();
+          if (extDir != null) {
+            baseDir = Directory('${extDir.path}/PGHacked');
+          }
+        }
+      }
+    } catch (e) {
+      print('Error accessing external storage path: $e');
+    }
+
+    if (baseDir == null) {
+      final appDir = await getApplicationDocumentsDirectory();
+      baseDir = Directory('${appDir.path}/PGHacked');
+    }
+
+    if (!await baseDir.exists()) {
+      await baseDir.create(recursive: true);
+    }
+
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final filePath = '${directory.path}/students_$timestamp.xlsx';
+    final filePath = '${baseDir.path}/students_$timestamp.xlsx';
     
     final fileBytes = excel.save();
     if (fileBytes != null) {

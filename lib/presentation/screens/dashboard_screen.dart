@@ -82,7 +82,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: () async {
                 final roomText = roomNumberController.text.trim();
                 final capacityText = capacityController.text.trim();
@@ -126,7 +126,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 );
               },
-              child: const Text('Add'),
+              icon: const Icon(Icons.add),
+              label: const Text('Add'),
             ),
           ],
         );
@@ -155,7 +156,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.errorColor,
               ),
@@ -193,7 +194,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 );
               },
-              child: const Text('Delete'),
+              icon: const Icon(Icons.delete),
+              label: const Text('Delete'),
             ),
           ],
         );

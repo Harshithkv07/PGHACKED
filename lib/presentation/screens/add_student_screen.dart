@@ -6,6 +6,8 @@ import '../../logic/providers/student_provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/validators.dart';
 import '../../core/utils/whatsapp_helper.dart';
+import '../../logic/providers/room_provider.dart';
+import '../../logic/providers/rent_provider.dart';
 
 class AddStudentScreen extends StatefulWidget {
   const AddStudentScreen({super.key});
@@ -120,6 +122,10 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     if (!mounted) return;
 
     if (success) {
+      // Sync changes with dashboard and rent modules
+      Provider.of<RoomProvider>(context, listen: false).loadRooms();
+      Provider.of<RentProvider>(context, listen: false).loadStudents();
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Student added successfully!'),

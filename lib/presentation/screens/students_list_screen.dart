@@ -4,6 +4,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../logic/providers/student_provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/whatsapp_helper.dart';
+import '../../logic/providers/room_provider.dart';
+import '../../logic/providers/rent_provider.dart';
 import '../widgets/student_profile_dialog.dart';
 
 class StudentsListScreen extends StatefulWidget {
@@ -66,12 +68,18 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
       await Provider.of<StudentProvider>(context, listen: false).deleteStudent(studentId);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Student deleted successfully'),
-            backgroundColor: AppColors.successColor,
-          ),
-        );
+        // Sync changes with dashboard and rent modules
+        await Provider.of<RoomProvider>(context, listen: false).loadRooms();
+        await Provider.of<RentProvider>(context, listen: false).loadStudents();
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Student deleted successfully'),
+              backgroundColor: AppColors.successColor,
+            ),
+          );
+        }
       }
     }
   }
@@ -199,6 +207,7 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
       ),
       child: InkWell(
         onTap: () => _showStudentProfile(context, student.id!),
+        onLongPress: () => _deleteStudent(student.id!),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -225,84 +234,33 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Name row
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            student.name,
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                              fontSize: 15,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      student.name,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                        fontSize: 15,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 8),
-                    // Contact and College Row
-                    Row(
-                      children: [
-                        Icon(Icons.phone, size: 13, color: AppColors.textMuted),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            student.contact,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Icon(Icons.school, size: 13, color: AppColors.textMuted),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            student.college,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 4),
+                    Text(
+                      'Room ${student.roomNumber}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 10),
-              // Room badge + action buttons aligned on the right
+              // Action buttons aligned on the right
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryAccent.withOpacity(0.18),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Room ${student.roomNumber}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryAccent,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
                   _buildCompactActionButton(
                     icon: Icons.phone,
                     color: AppColors.successColor,
